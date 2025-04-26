@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>AI Quiz Generator</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(to right, #667eea, #764ba2);
+      margin: 0;
+      padding: 0;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      color: #333;
+    }
+    header {
+      padding: 20px;
+      text-align: center;
+      color: #fff;
+    }
+    .container {
+      background: #fff;
+      margin: 20px;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0px 8px 24px rgba(0, 0, 0, 0.15);
+      width: 90%;
+      max-width: 800px;
+    }
+    form {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 15px;
+      margin-bottom: 20px;
+    }
+    input, select, button {
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+      flex: 1 1 180px;
+    }
+    button {
+      background-color: #667eea;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    button:hover {
+      background-color: #5a67d8;
+    }
+    .quiz-container {
+      margin-top: 20px;
+    }
+    .question {
+      background: #f9f9f9;
+      padding: 20px;
+      margin-bottom: 15px;
+      border-radius: 10px;
+      box-shadow: 0px 2px 6px rgba(0,0,0,0.05);
+    }
+    .question h3 {
+      margin-top: 0;
+      font-size: 20px;
+      color: #333;
+    }
+    ul {
+      padding-left: 20px;
+      margin: 10px 0;
+    }
+    ul li {
+      margin-bottom: 8px;
+      font-size: 16px;
+    }
+    .answer {
+      margin-top: 10px;
+      font-weight: bold;
+      color: #2c5282;
+    }
+    footer {
+      margin-top: auto;
+      padding: 20px;
+      font-size: 14px;
+      color: #fff;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>🚀 AI Quiz Generator</h1>
+    <p>Generate customized quizzes instantly with AI</p>
+  </header>
+
+  <div class="container">
+    <form id="quiz-form">
+      <input type="text" name="topic" placeholder="Enter Topic (e.g., DevOps)" required>
+      <input type="number" name="num_q" value="5" min="1" max="20" placeholder="Number of Questions" required>
+      <select name="diff">
+        <option value="beginner">Beginner</option>
+        <option value="intermediate" selected>Intermediate</option>
+        <option value="advanced">Advanced</option>
+      </select>
+      <select name="lang">
+        <option value="English" selected>English</option>
+        <option value="Spanish">Spanish</option>
+      </select>
+      <button type="submit">Generate Quiz</button>
+    </form>
+
+    <div id="quiz-output" class="quiz-container"></div>
+  </div>
+
+  <footer>
+    Made with ❤️ using Flask + Vertex AI
+  </footer>
+
+  <script>
+    const form = document.getElementById("quiz-form");
+    const output = document.getElementById("quiz-output");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const formData = new FormData(form);
+      const params = new URLSearchParams(formData);
+      output.innerHTML = "<p>Loading quiz...</p>";
+
+      try {
+        const res = await fetch(`/generate?${params.toString()}`);
+        const data = await res.json();
+
+        if (data.error) {
+          output.innerHTML = `<p style="color:red;">Error: ${data.details}</p><pre>${data.raw_response}</pre>`;
+          return;
+        }
+
+        output.innerHTML = data.map((q, idx) => `
+          <div class="question">
+            <h3>Q${idx + 1}: ${q.question}</h3>
+            <ul>${q.responses.map(r => `<li>${r}</li>`).join("")}</ul>
+            <div class="answer">✅ Correct Answer: ${q.correct}</div>
+          </div>
+        `).join("");
+      } catch (err) {
+        output.innerHTML = `<p style="color:red;">Failed to fetch quiz: ${err.message}</p>`;
+      }
+    });
+  </script>
+
+</body>
+</html>
